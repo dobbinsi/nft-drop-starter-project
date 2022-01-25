@@ -407,7 +407,6 @@ const CandyMachine = ({ walletAddress }) => {
     return <div className='gif-grid'> {
       (mints.map(item => {
         return <div className="gif-item" key={item.name}>
-          {/* <img src={item.link} alt={item.name} /> */}
           <p>{item.link}</p>
           <img src={item.link}/>
         </div>
