@@ -13,6 +13,9 @@ import {
   getNetworkToken,
   CIVIC
 } from './helpers';
+import CountdownTimer from '../CountdownTimer';
+import nftData from '../.cache/devnet-temp.json';
+
 
 const { SystemProgram } = web3;
 const opts = {
@@ -23,6 +26,7 @@ const CandyMachine = ({ walletAddress }) => {
 
   const [candyMachine, setCandyMachine] = useState(null);
   const [machineStats, setMachineStats] = useState(null);
+  const [mints, setMints] = useState([]);
 
   const getCandyMachineCreator = async (candyMachine) => {
     const candyMachineID = new PublicKey(candyMachine);
@@ -95,6 +99,7 @@ const CandyMachine = ({ walletAddress }) => {
       },
     });
 
+
     setMachineStats({
       itemsAvailable,
       itemsRedeemed,
@@ -103,6 +108,13 @@ const CandyMachine = ({ walletAddress }) => {
       goLiveDateTimeString,
     });
 
+    var mintedItems = [];
+    for (var i = 0; i < itemsRedeemed; i++) {
+      mintedItems.push(nftData.items[i]);
+    }
+
+    setMints(mintedItems);
+
     console.log({
       itemsAvailable,
       itemsRedeemed,
@@ -110,6 +122,7 @@ const CandyMachine = ({ walletAddress }) => {
       goLiveData,
       goLiveDateTimeString,
       presale,
+      mintedItems,
     });
   };
 
@@ -381,16 +394,42 @@ const CandyMachine = ({ walletAddress }) => {
     return [];
   };
 
+  const renderDropTimer = () => {
+    const currentDate = new Date();
+    const dropDate = new Date(machineStats.goLiveData * 1000);
+    if (currentDate < dropDate) {
+      return <CountdownTimer dropDate={dropDate} />;
+    }
+    return <p>{`Drop Date: ${machineStats.goLiveDateTimeString}`}</p>
+  };
+
+  const renderMintedItems = () => {
+    return <div className='gif-grid'> {
+      (mints.map(item => {
+        return <div className="gif-item" key={item.name}>
+          {/* <img src={item.link} alt={item.name} /> */}
+          <p>{item.link}</p>
+          <img src={item.link}/>
+        </div>
+      }))
+    }
+    </div>
+  };
+
   return (
     machineStats && (
       <div className="machine-container">
-        <p>Drop Date:</p>
-        <p>{machineStats.goLiveDateTimeString}</p>
+        {renderDropTimer()}
         <p>Items Minted:</p>
         <p>{machineStats.itemsRedeemed} / {machineStats.itemsAvailable}</p>
-        <button className="cta-button mint-button" onClick={mintToken}>
-          Mint NFT
-        </button>
+        {machineStats.itemsRedeemed === machineStats.itemsAvailable ? (
+          <p className='sub-text'>Sold Out!</p>
+        ) : (
+          <button className="cta-button mint-button" onClick={mintToken}>
+            Mint NFT
+          </button>
+        )}
+        {/* {mints.length > 0 && renderMintedItems()} */}
       </div>
     )
   );
